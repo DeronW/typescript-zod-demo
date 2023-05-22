@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Demo</title>
+    <style>
+      body {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mx-auto px-4">
+      <div class="flex gap-6">
+        <div class="grow">
+          <h4>json 数据</h4>
+          <pre>
+            <code class="language-json">
+// raw_data
+{
+  "name": "john",
+  "age": 36,
+  "surplus": false
+}
+            </code>
+          </pre>
+        </div>
+        <div class="grow">
+          <h4 class="px-4">zod 结构声明</h4>
+          <pre>
+        <code class="language-typescript">
+// 使用 zod 定义 schema, 用来解析
+import * as zod from "zod";
+const schema = zod.object({
+  name: zod.string(),
+  age: zod.number()
+})
+        </code>
+      </pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="container mx-auto">
+      <table class="table-auto border-separate border-spacing-2">
+        <caption>
+          JSON 解析
+        </caption>
+        <thead>
+          <tr>
+            <th class="border border-slate-600">解析方法</th>
+            <th class="border border-slate-600">测试</th>
+            <th class="border border-slate-600">解析结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// 手动解析
+function jsonParse() {
+  return JSON.parse(raw_data);
+}
+function parseDirectly() {
+  return schema.parse(jsonParse());
+}
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="parse_1"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="parse_1_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// 装饰器方法
+function jsonParse() {
+  return JSON.parse(raw_data);
+}
+function parseByDecorator() {
+  const proxy = new Proxy(jsonParse as () => typeof schema, {
+    apply(target: () => typeof schema, ctx: any, args: Array&lt;any&gt;) {
+      const r = Reflect.apply(target, ctx, args);
+      return schema.parse(r);
+    },
+  });
+  return proxy;
+}
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="parse_2"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="parse_2_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// 幽灵校验方法
+function parseByDepartedProof(): any;
+function parseByDepartedProof&lt;
+  T extends zod.ZodRawShape,
+  U extends zod.UnknownKeysParam,
+  C extends zod.ZodTypeAny,
+  O
+>(schema: zod.ZodObject&lt;T, U, C, O&gt;): O;
+function parseByDepartedProof&lt;T extends zod.ZodRawShape&gt;(
+  schema?: zod.ZodObject&lt;T&gt;
+) {
+  const r = jsonParse();
+  if (schema) {
+    return schema.parse(r);
+  } else {
+    return r;
+  }
+}
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="parse_3"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+              <br />
+              <br />
+
+              <button
+                id="parse_4"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试无校验
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="parse_3_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="container mx-auto">
+      <table class="table-auto border-separate border-spacing-2">
+        <caption>
+          Ajax 解析
+        </caption>
+        <thead>
+          <tr>
+            <th class="border border-slate-600">解析方法</th>
+            <th class="border border-slate-600">测试</th>
+            <th class="border border-slate-600">解析结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// get 原始请求
+Get("http://localhost:8000/data")
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="ajax_1"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="ajax_1_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// get 带校验
+Get(schema)("http://localhost:8000/data")
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="ajax_2"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="ajax_2_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// post 
+Post(
+  "http://localhost:8000/post", 
+  {"name":"john","age":36,"surplus":false}
+)
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="ajax_3"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="ajax_3_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// post 带校验
+Post(schema)(
+  "http://localhost:8000/post", 
+  {"name":"john","age":36,"surplus":false}
+)
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="ajax_4"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="ajax_4_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <pre>
+              <code class="language-typescript">
+// get 请求 500
+Get(schema)("http://localhost:8000/500")
+              </code>
+            </pre>
+            </td>
+            <td>
+              <button
+                id="ajax_500"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                测试
+              </button>
+            </td>
+            <td>
+              <pre>
+              <code id="ajax_500_result" class="language-typescript">
+              </code>
+            </pre>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"
+    />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <script>
+      hljs.highlightAll();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </body>
+</html>
